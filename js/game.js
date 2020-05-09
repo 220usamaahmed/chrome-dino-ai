@@ -1,5 +1,7 @@
 DEBUG = false;
 
+DINO_PER_GEN = 16;
+
 function preload() {
 	sprites = {
 		floor: loadImage('assets/sprites/floor-1.png'),
@@ -24,9 +26,9 @@ function setup() {
 	if (DEBUG) frameRate(8);
 
 	env = new Environment();
-	dino = new Dino();
 
-	env.addObstical();
+	dinos = [];
+	for (let i = 0; i < DINO_PER_GEN; i++) dinos.push(new Dino());
 }
 
 function draw() {
@@ -35,27 +37,69 @@ function draw() {
 	env.update();
 	env.draw();
 
-	dino.update();
-	dino.draw();
+	handleDinos();
 
-	currentObs = env.findCurrentObstical(dino);
+	if (DEBUG) debug();
+}
 
-	if (DEBUG) {
-		noStroke(); fill(255, 0, 0);
-		ellipse(currentObs.pos.x, currentObs.pos.y, 8, 8);
+function handleDinos() {
 
-		if (env.checkCollision(dino)) {
-			noStroke(); fill(255, 0, 0);
-			rect(0, 0, width, 8);
+	let atleast1Alive = false;	
+
+	for (let i = 0; i < DINO_PER_GEN; i++) {
+		if (dinos[i].alive) {
+			atleast1Alive = true;
+
+			dinos[i].update();
+			dinos[i].draw();
+
+			currentObs = env.findCurrentObstical(dinos[i]);
+			dinos[i].takeAction([
+				currentObs.pos.x,
+				currentObs.pos.y,
+				currentObs.dims.width,
+				currentObs.dims.height,
+				Environment.envSlide
+			]);
+
+			if (env.checkCollision(dinos[i])) dinos[i].die();
 		}
+	}
+
+	if (!atleast1Alive) startNextGen();
+
+}
+
+function startNextGen() {
+	env.reset();
+
+	let bestDino = dinos[0];
+	for (let i = 1; i < DINO_PER_GEN; i++)
+		if (dinos[i].age > bestDino.age) bestDino = dinos[i]
+
+	console.log("Best Dino Age: " + bestDino.age);
+
+	dinos = [];
+	for (let i = 0; i < DINO_PER_GEN; i++) dinos.push(new Dino(bestDino.brain));
+
+}
+
+function debug() {
+	currentObs = env.findCurrentObstical(dinos[0]);
+	noStroke(); fill(255, 0, 0);
+	ellipse(currentObs.pos.x, currentObs.pos.y, 8, 8);
+
+	if (env.checkCollision(dinos[0])) {
+		noStroke(); fill(255, 0, 0);
+		rect(0, 0, width, 8);
 	}
 }
 
-function keyPressed() {
-	if (keyCode === UP_ARROW) dino.jump();
-	else if (keyCode === DOWN_ARROW) dino.duck();
-}
+// function keyPressed() {
+// 	if (keyCode === UP_ARROW) dino.jump();
+// 	else if (keyCode === DOWN_ARROW) dino.duck();
+// }
 
-function keyReleased() {
-	if (keyCode === DOWN_ARROW) dino.unduck();
-}
+// function keyReleased() {
+// 	if (keyCode === DOWN_ARROW) dino.unduck();
+// }

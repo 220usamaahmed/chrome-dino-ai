@@ -13,16 +13,18 @@ class Environment {
 			{ width: sprites.cactus5.width, height: sprites.cactus5.height, altitude: 0, sprites: [sprites.cactus5] },
 
 			// Birds
-			{ width: sprites.enemy1.width, height: sprites.enemy1.height, altitude: 16, sprites: [sprites.enemy1, sprites.enemy2] },
-			{ width: sprites.enemy1.width, height: sprites.enemy1.height, altitude: 42, sprites: [sprites.enemy1, sprites.enemy2] },
+			// { width: sprites.enemy1.width, height: sprites.enemy1.height, altitude: 16, sprites: [sprites.enemy1, sprites.enemy2] },
+			// { width: sprites.enemy1.width, height: sprites.enemy1.height, altitude: 42, sprites: [sprites.enemy1, sprites.enemy2] },
 		];
 		this.newObsEvery = 48;
 		this.obsticals = [];
 		this.slideAmount = 0;
+
+		this.addObstical();
 	}
 
 	update() {
-		if (frameCount % this.newObsEvery == 0)
+		if (this.slideAmount % (this.newObsEvery * Environment.envSlide) == 0)
 			this.addObstical();
 
 		if (this.obsticals.length && this.obsticals[0].isOffScreen())
@@ -68,6 +70,11 @@ class Environment {
 	checkCollision(dino) {
 		let currentObs = this.findCurrentObstical(dino);
 		return currentObs.checkCollision(dino);
+	}
+
+	reset() {
+		this.obsticals = [];
+		this.slideAmount = 0;
 	}
 	
 }
