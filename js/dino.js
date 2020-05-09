@@ -1,6 +1,6 @@
 class DinoBrain {
 
-	constructor (parentBrain=null) {
+	constructor(parentBrain=null) {
 		this.inputSize = 6;
 		this.hiddenLayer1Size = 6;
 		this.hiddenLayer2Size = 3;
@@ -12,31 +12,52 @@ class DinoBrain {
 	}
 
 	createBrainFromScratch() {
-		this.W_I_H0 = tf.randomUniform([this.hiddenLayer1Size, this.inputSize], -1, 1);
-		this.B_I_H0 = tf.randomUniform([this.hiddenLayer1Size, 1], -1, 1);
+		this.W_I_H0 = math.random([this.hiddenLayer1Size, this.inputSize], -1, 1);
+		this.B_I_H0 = math.random([this.hiddenLayer1Size, 1], -1, 1);
 
-		this.W_H0_H1 = tf.randomUniform([this.hiddenLayer2Size, this.hiddenLayer1Size], -1, 1);
-		this.B_H0_H1 = tf.randomUniform([this.hiddenLayer2Size, 1], -1, 1);
+		this.W_H0_H1 = math.random([this.hiddenLayer2Size, this.hiddenLayer1Size], -1, 1);
+		this.B_H0_H1 = math.random([this.hiddenLayer2Size, 1], -1, 1);
 
-		this.W_H1_Y = tf.randomUniform([this.outputSize, this.hiddenLayer2Size], -1, 1);
+		this.W_H1_Y = math.random([this.outputSize, this.hiddenLayer2Size], -1, 1);
 	}
 
 	createBrainFromParent(parentBrain) {
-		this.W_I_H0 = tf.add(parentBrain.W_I_H0, tf.mul(tf.randomNormal(parentBrain.W_I_H0.shape), this.mutationFactor));
-		this.B_I_H0 = tf.add(parentBrain.B_I_H0, tf.mul(tf.randomNormal(parentBrain.B_I_H0.shape), this.mutationFactor));
+		this.createBrainFromScratch();
 
-		this.W_H0_H1 = tf.add(parentBrain.W_H0_H1, tf.mul(tf.randomNormal(parentBrain.W_H0_H1.shape), this.mutationFactor));
-		this.B_H0_H1 = tf.add(parentBrain.B_H0_H1, tf.mul(tf.randomNormal(parentBrain.B_H0_H1.shape), this.mutationFactor));
+		this.W_I_H0 = math.add(parentBrain.W_I_H0, math.multiply(this.W_I_H0, this.mutationFactor));
+		this.B_I_H0 = math.add(parnetBrain.B_I_H0, math.multiply(this.B_I_H0, this.mutationFactor));
 
-		this.W_H1_Y = tf.add(parentBrain.W_H1_Y, tf.mul(tf.randomNormal(parentBrain.W_H1_Y.shape), this.mutationFactor));
+		this.W_H0_H1 = math.add(parentBrain.W_H0_H1, math.multiply(this.W_H0_H1, this.mutationFactor));
+		this.B_H0_H1 = math.add(parentBrain.B_H0_H1, math.multiply(this.B_H0_H1, this.mutationFactor));
+
+		this.W_H1_Y = math.add(parentBrain.W_H1_Y, math.multiply(this.W_H1_Y, this.mutationFactor));
 	}
 
 	pickAction(input) {
-		const I = tf.tensor(input).reshape([this.inputSize, 1]);
-		const H0 = tf.add(tf.matMul(this.W_I_H0, I), this.B_I_H0).sigmoid();
-		const H1 = tf.add(tf.matMul(this.W_H0_H1, H0), this.B_H0_H1).sigmoid();
-		const Y = tf.matMul(this.W_H1_Y, H1).reshape([1, this.outputSize]).softmax();
-		return Y.argMax(1).dataSync()[0];
+		const I = math.transpose(math.matrix([input]));
+		const H0 = math.map(math.add(math.multiply(this.W_I_H0, I), this.B_I_H0), this.sigmoid);
+		const H1 = math.map(math.add(math.multiply(this.W_H0_H1, H0), this.B_H0_H1), this.sigmoid);
+		const Y = this.softmax(math.multiply(this.W_H1_Y, H1));
+		
+		// ArgMax
+		let largestOutputIdx = 0;
+		let largestOutput = Y.get([largestOutputIdx, 0]);
+		for (let i = 1; i < this.outputSize; i++)
+			if (Y.get([i, 0]) > largestOutput) {
+				largestOutputIdx = i;
+				largestOutput = Y.get([i, 0]);
+			}
+		return largestOutputIdx;
+	}
+
+	sigmoid(x) {
+		return 1 / (1 + math.exp(-x));
+	}
+
+	softmax(mat) {
+		const mat_e = math.exp(mat);
+		const sum = math.sum(mat_e);
+		return math.multiply(mat_e, 1 / sum);
 	}
 
 }

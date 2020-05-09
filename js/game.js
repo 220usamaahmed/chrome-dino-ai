@@ -39,6 +39,7 @@ function draw() {
 
 	handleDinos();
 
+	// noLoop();
 	if (DEBUG) debug();
 }
 
