@@ -3,6 +3,7 @@ class Obstical {
 	constructor(_width, _height, _altitude, _sprites) {
 		this.dims = { width: _width, height: _height };
 		this.pos = { x: width, y: height - Environment.groundHeight - this.dims.height - _altitude };
+		this.altitude = _altitude;
 		this.sprites = _sprites;
 	}
 

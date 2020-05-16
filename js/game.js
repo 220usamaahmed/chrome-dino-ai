@@ -1,6 +1,6 @@
 DEBUG = false;
 
-DINO_PER_GEN = 16;
+DINO_PER_GEN = 64;
 
 function preload() {
 	sprites = {
@@ -46,6 +46,7 @@ function draw() {
 function handleDinos() {
 
 	let atleast1Alive = false;	
+	currentObs = env.findCurrentObstical(dinos[0]);
 
 	for (let i = 0; i < DINO_PER_GEN; i++) {
 		if (dinos[i].alive) {
@@ -54,13 +55,12 @@ function handleDinos() {
 			dinos[i].update();
 			dinos[i].draw();
 
-			currentObs = env.findCurrentObstical(dinos[i]);
 			dinos[i].takeAction([
-				currentObs.pos.x,
-				currentObs.pos.y,
-				currentObs.dims.width,
-				currentObs.dims.height,
-				Environment.envSlide
+				currentObs ? currentObs.pos.x : -1,
+				currentObs ? currentObs.altitude : -1,
+				currentObs ? currentObs.dims.width : -1,
+				currentObs ? currentObs.dims.height : -1,
+				// Environment.envSlide
 			]);
 
 			if (env.checkCollision(dinos[i])) dinos[i].die();

@@ -1,36 +1,43 @@
 class DinoBrain {
 
 	constructor(parentBrain=null) {
-		this.inputSize = 6;
+		this.inputSize = 5;
 		this.hiddenLayer1Size = 6;
 		this.hiddenLayer2Size = 3;
 		this.outputSize = 3;
-		this.mutationFactor = 0.2;
+		this.mutationFactor = 0.5;
 
 		if (parentBrain != null) this.createBrainFromParent(parentBrain);
 		else this.createBrainFromScratch();
 	}
 
 	createBrainFromScratch() {
-		this.W_I_H0 = math.random([this.hiddenLayer1Size, this.inputSize], -1, 1);
-		this.B_I_H0 = math.random([this.hiddenLayer1Size, 1], -1, 1);
+		this.W_I_H0 = math.random([this.hiddenLayer1Size, this.inputSize], -2, 2);
+		this.B_I_H0 = math.random([this.hiddenLayer1Size, 1], -2, 2);
 
-		this.W_H0_H1 = math.random([this.hiddenLayer2Size, this.hiddenLayer1Size], -1, 1);
-		this.B_H0_H1 = math.random([this.hiddenLayer2Size, 1], -1, 1);
+		this.W_H0_H1 = math.random([this.hiddenLayer2Size, this.hiddenLayer1Size], -2, 2);
+		this.B_H0_H1 = math.random([this.hiddenLayer2Size, 1], -2, 2);
 
-		this.W_H1_Y = math.random([this.outputSize, this.hiddenLayer2Size], -1, 1);
+		this.W_H1_Y = math.random([this.outputSize, this.hiddenLayer2Size], -2, 2);
 	}
 
 	createBrainFromParent(parentBrain) {
-		this.createBrainFromScratch();
 
-		this.W_I_H0 = math.add(parentBrain.W_I_H0, math.multiply(this.W_I_H0, this.mutationFactor));
-		this.B_I_H0 = math.add(parnetBrain.B_I_H0, math.multiply(this.B_I_H0, this.mutationFactor));
+		let mutate = (val) => {
+			if (math.random(0, 1) < this.mutationFactor) {
+				return val + math.random(-2, 2);
+			} else { 
+				return val;
+			}
+		}
 
-		this.W_H0_H1 = math.add(parentBrain.W_H0_H1, math.multiply(this.W_H0_H1, this.mutationFactor));
-		this.B_H0_H1 = math.add(parentBrain.B_H0_H1, math.multiply(this.B_H0_H1, this.mutationFactor));
+		this.W_I_H0 = math.map(parentBrain.W_I_H0, mutate);
+		this.B_I_H0 = math.map(parentBrain.B_I_H0, mutate);
 
-		this.W_H1_Y = math.add(parentBrain.W_H1_Y, math.multiply(this.W_H1_Y, this.mutationFactor));
+		this.W_H0_H1 = math.map(parentBrain.W_H0_H1, mutate);
+		this.B_H0_H1 = math.map(parentBrain.B_H0_H1, mutate);
+
+		this.W_H1_Y = math.map(parentBrain.W_H1_Y, mutate);
 	}
 
 	pickAction(input) {
@@ -65,14 +72,14 @@ class DinoBrain {
 
 class Dino {
 
-	constructor() {
+	constructor(parentBrain=null) {
 		this.dims = { width: sprites.run1.width, height: sprites.run1.height };
 		this.defaultY = height - Environment.groundHeight - this.dims.height;
 		this.pos = { x: 64, y: this.defaultY };
 		this.vel = { dx: 0, dy: 0 };
 		this.acc = { ddx: 0, ddy: 0 };
 		this.isDucking = false;
-		this.brain = new DinoBrain();
+		this.brain = new DinoBrain(parentBrain);
 		this.age = 0;
 		this.alive = true;
 	}
@@ -80,7 +87,7 @@ class Dino {
 	jump() {
 		if (this.pos.y == this.defaultY) {
 			this.isDucking = false;
-			this.acc.ddy = -1.4;
+			this.acc.ddy = -1.3;
 			this.update();
 		}
 	}
